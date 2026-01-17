@@ -1284,25 +1284,65 @@
         let currentGift = null;
         let lottiePlayer = null;
 
-        // Инициализация Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
+        // Функция для получения user_id из Telegram WebApp
+        function getUserId() {
+            // Если есть Telegram WebApp, берем оттуда
+            if (window.Telegram && window.Telegram.WebApp) {
+                const initData = window.Telegram.WebApp.initData;
+                if (initData) {
+                    // Парсим initData чтобы получить user_id
+                    try {
+                        const params = new URLSearchParams(initData);
+                        const userStr = params.get('user');
+                        if (userStr) {
+                            const user = JSON.parse(userStr);
+                            return user.id;
+                        }
+                    } catch (e) {
+                        console.error('Ошибка парсинга initData:', e);
+                    }
+                }
+            }
             
-            // Принудительно устанавливаем темную тему
-            if (window.Telegram.WebApp.setHeaderColor) {
-                window.Telegram.WebApp.setHeaderColor('#0a0a0a');
-            }
-            if (window.Telegram.WebApp.setBackgroundColor) {
-                window.Telegram.WebApp.setBackgroundColor('#0a0a0a');
-            }
+            // Или из query параметра в URL
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('user_id') || urlParams.get('user') || urlParams.get('telegram_id');
         }
 
         // Функция для загрузки подарков
         async function loadGifts() {
             try {
-                const response = await fetch('/api/gifts');
+                // Получаем user_id
+                const userId = getUserId();
+                
+                if (!userId) {
+                    console.log('User ID не найден');
+                    document.getElementById('loadingMessage').textContent = 'Не удалось определить пользователя. Откройте WebApp через бота.';
+                    return;
+                }
+                
+                console.log('Загружаем подарки для user_id:', userId);
+                
+                // Используем абсолютный URL к API
+                // Если WebApp на том же домене что и Flask сервер, можно использовать относительный
+                let apiUrl;
+                
+                // Проверяем, открыт ли WebApp через Telegram
+                if (window.Telegram && window.Telegram.WebApp) {
+                    // Если в Telegram WebApp, используем относительный путь
+                    apiUrl = `/api/gifts?user_id=${userId}`;
+                } else {
+                    // Если открыт в браузере напрямую, используем абсолютный URL
+                    // Замени localhost:5000 на адрес твоего Flask сервера
+                    apiUrl = `http://localhost:5000/api/gifts?user_id=${userId}`;
+                }
+                
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
                 const data = await response.json();
+                
+                console.log('Данные от API:', data);
                 
                 if (data.success && data.gifts && data.gifts.length > 0) {
                     displayGift(data.gifts[0]); // Показываем первый подарок
@@ -1311,7 +1351,7 @@
                 }
             } catch (error) {
                 console.error('Ошибка загрузки подарков:', error);
-                document.getElementById('loadingMessage').textContent = 'Ошибка загрузки';
+                document.getElementById('loadingMessage').textContent = 'Ошибка загрузки. Проверьте подключение.';
             }
         }
 
@@ -1323,8 +1363,8 @@
             document.getElementById('loadingMessage').style.display = 'none';
             
             // Обновляем информацию о подарке
-            document.getElementById('giftName').textContent = gift.name || 'Подарок';
-            document.getElementById('giftId').textContent = `#${gift.id || '0000'}`;
+            document.getElementById('giftName').textContent = gift.name || gift.nft_name || 'Подарок';
+            document.getElementById('giftId').textContent = `#${gift.id || gift.nft_number || '0000'}`;
             
             // Загружаем анимацию
             loadGiftAnimation(gift);
@@ -1389,17 +1429,51 @@
             withdrawBtn.textContent = 'Выводим...';
 
             try {
-                // Здесь должна быть логика вывода подарка
-                // Пока просто показываем уведомление
-                console.log('Функция вывода в разработке');
+                // Получаем user_id
+                const userId = getUserId();
                 
-                // Если есть Telegram WebApp, можно использовать его функции
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.showAlert('Подарок будет выведен в ближайшее время');
+                if (!userId) {
+                    alert('Не удалось определить пользователя');
+                    return;
+                }
+                
+                // Отправляем запрос на вывод подарка
+                const response = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        gift_id: currentGift.id,
+                        user_id: userId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Если есть Telegram WebApp, можно использовать его функции
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.showAlert('Подарок успешно выведен!');
+                    } else {
+                        alert('Подарок успешно выведен!');
+                    }
+                    
+                    // Обновляем список подарков
+                    loadGifts();
+                } else {
+                    throw new Error(data.error || 'Ошибка вывода');
                 }
                 
             } catch (error) {
                 console.error('Ошибка вывода подарка:', error);
+                
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showAlert('Ошибка: ' + error.message);
+                } else {
+                    alert('Ошибка: ' + error.message);
+                }
+                
             } finally {
                 withdrawBtn.disabled = false;
                 withdrawBtn.textContent = 'Вывести';
@@ -1409,25 +1483,8 @@
         // Функция инициализации приложения
         async function initApp() {
             try {
-                // Регистрируем пользователя
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        init_data: window.Telegram?.WebApp?.initData || ''
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Загружаем подарки
-                    await loadGifts();
-                } else {
-                    console.log('Ошибка регистрации пользователя');
-                }
+                // Загружаем подарки
+                await loadGifts();
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
             }
