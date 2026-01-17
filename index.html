@@ -3,417 +3,495 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Getgems NFT Инвентарь</title>
+    <title>Getgems - Подарки</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
-        /* Основные стили */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        :root {
-            --primary: #007AFF;
-            --secondary: #5856D6;
-            --success: #34C759;
-            --danger: #FF3B30;
-            --warning: #FF9500;
-            --dark: #000000;
-            --dark-1: #1C1C1E;
-            --dark-2: #2C2C2E;
-            --dark-3: #3A3A3C;
-            --light: #FFFFFF;
-            --gray: #8E8E93;
-            --gray-2: #636366;
-            --gray-3: #48484A;
-            
-            /* Редкости NFT */
-            --common: #8E8E93;
-            --uncommon: #32D74B;
-            --rare: #0A84FF;
-            --epic: #BF5AF2;
-            --legendary: #FFD60A;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: var(--dark);
-            color: var(--light);
+        html, body {
+            background: #131314 !important;
+            color: #ffffff !important;
             min-height: 100vh;
-            line-height: 1.6;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+            font-style: normal;
             overflow-x: hidden;
         }
-
-        /* Принудительная темная тема */
-        html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea {
-            background-color: var(--dark) !important;
-            color: var(--light) !important;
+        
+        /* Принудительная темная тема для всех элементов */
+        *, *::before, *::after {
+            background-color: inherit !important;
+            color: inherit !important;
+        }
+        
+        /* Переопределение для элементов, которые могут менять цвет */
+        input, textarea, select, button {
+            background: #2a2a2a !important;
+            color: #ffffff !important;
+            border-color: #3a3a3a !important;
+        }
+        
+        /* Исключение для кнопки вывода подарков */
+        .btn-withdraw {
+            background: #007AFF !important;
+            color: white !important;
+        }
+        
+        .btn-withdraw:hover {
+            background: #0056CC !important;
+        }
+        
+        /* Принудительная темная тема для Telegram WebApp */
+        [data-theme="light"] {
+            background: #0a0a0a !important;
+            color: #ffffff !important;
         }
 
-        /* Контейнер приложения */
-        .app {
-            max-width: 800px;
+        .container {
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
+            padding: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background: var(--dark);
         }
 
-        /* Header */
-        .header {
-            background: var(--dark-1);
-            border-bottom: 1px solid var(--dark-2);
-            padding: 16px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* Стили для навигации */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-        }
-
-        .header-content {
+            border-top: 1px solid rgba(207, 179, 179, 0.2);
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
         }
 
-        .logo {
+        .nav-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
+            padding: 5px;
+            text-decoration: none;
+            color: #7d7d85;
+            font-size: 12px;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .logo h1 {
-            font-size: 20px;
-            font-weight: 600;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: var(--dark-2);
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .user-info i {
-            color: var(--primary);
-        }
-
-        /* Статистика */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            padding: 20px;
-            margin-top: 10px;
-        }
-
-        .stat-card {
-            background: var(--dark-1);
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            border: 1px solid var(--dark-2);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-card i {
-            font-size: 24px;
-            margin-bottom: 8px;
-            color: var(--primary);
-        }
-
-        .stat-card.common i { color: var(--common); }
-        .stat-card.uncommon i { color: var(--uncommon); }
-        .stat-card.rare i { color: var(--rare); }
-        .stat-card.epic i { color: var(--epic); }
-        .stat-card.legendary i { color: var(--legendary); }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 4px 0;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--gray);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Фильтры */
-        .filters {
-            padding: 0 20px 16px;
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .filters::-webkit-scrollbar {
-            display: none;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            background: var(--dark-2);
-            color: var(--gray);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .filter-btn i {
-            font-size: 12px;
-        }
-
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .filter-btn:hover {
-            background: var(--dark-3);
-        }
-
-        .filter-btn.active:hover {
-            background: var(--primary);
-            opacity: 0.9;
-        }
-
-        /* Сетка NFT */
-        .nft-grid {
-            padding: 0 20px 100px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 16px;
-        }
-
-        /* Карточка NFT */
-        .nft-card {
-            background: var(--dark-1);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .nft-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
-        }
-
-        .nft-card.common { border-color: var(--common); }
-        .nft-card.uncommon { border-color: var(--uncommon); }
-        .nft-card.rare { border-color: var(--rare); }
-        .nft-card.epic { border-color: var(--epic); }
-        .nft-card.legendary { border-color: var(--legendary); }
-
-        .nft-image {
-            width: 100%;
-            height: 160px;
-            background: linear-gradient(135deg, var(--dark-2), var(--dark-3));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nft-image img {
+            transition: all 0.2s ease;
             width: 100%;
             height: 100%;
-            object-fit: cover;
         }
 
-        .nft-image .placeholder {
-            font-size: 48px;
-            color: rgba(255, 255, 255, 0.3);
+        .nav-item.active {
+            color: #007AFF;
         }
 
-        .nft-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 2px;
+            fill: currentColor;
         }
 
-        .nft-info {
-            padding: 12px;
-        }
-
-        .nft-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .nft-id {
-            font-size: 12px;
-            color: var(--gray);
-            margin-bottom: 8px;
-        }
-
-        .nft-rarity {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .common .nft-rarity { background: var(--common); color: white; }
-        .uncommon .nft-rarity { background: var(--uncommon); color: black; }
-        .rare .nft-rarity { background: var(--rare); color: white; }
-        .epic .nft-rarity { background: var(--epic); color: white; }
-        .legendary .nft-rarity { background: var(--legendary); color: black; }
-
-        /* Кнопки действий */
-        .nft-actions {
-            padding: 0 12px 12px;
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
+        /* Основной контент */
+        .main-content {
             flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
+            padding: 0 10px 80px 10px;
+            overflow-y: auto;
         }
 
-        .view-btn {
-            background: var(--dark-2);
-            color: var(--light);
-        }
-
-        .withdraw-btn {
-            background: var(--primary);
-            color: white;
-        }
-
-        .action-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        /* Пустое состояние */
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: var(--gray);
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: var(--light);
-        }
-
-        .empty-state p {
-            color: var(--gray);
-            margin-bottom: 30px;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .empty-btn {
-            padding: 12px 24px;
-            background: var(--primary);
+        /* Кнопки */
+        .btn {
+            background: #007AFF;
             color: white;
             border: none;
             border-radius: 12px;
+            padding: 12px 24px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        /* Нижняя навигация */
+        .bottom-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-around;
             align-items: center;
-            gap: 8px;
+            z-index: 1000;
         }
 
-        .empty-btn:hover {
-            background: var(--secondary);
-            transform: translateY(-2px);
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            color: #888;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            transition: color 0.2s;
         }
 
-        /* Загрузка */
-        .loading {
-            grid-column: 1 / -1;
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-item:hover {
+            background-color: #7d7d850a;
+            color: #fff;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        /* Отступ для контента */
+        body {
+            padding-bottom: 80px;
+        }
+
+        /* Стили для инвентаря */
+        .inventory-header {
+            padding: 20px 16px;
+            text-align: center;
+            background: #1a1a1a;
+            color: white;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .inventory-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .inventory-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .gifts-grid {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            background: #1a1a1a;
+        }
+
+        .gift-item {
+            background: linear-gradient(135deg, #2C2C2E 0%, #1C1C1E 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            min-height: 200px;
+            max-height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gift-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .gift-item.common {
+            background: linear-gradient(135deg, #2C2C2E 0%, #1C1C1E 100%);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .gift-item.uncommon {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            border-color: #4A90E2;
+        }
+
+        .gift-item.rare {
+            background: linear-gradient(135deg, #7FB069 0%, #6BA055 100%);
+            color: white;
+            border-color: #7FB069;
+        }
+
+        .gift-item.epic {
+            background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+            color: white;
+            border-color: #9B59B6;
+        }
+
+        .gift-item.legendary {
+            background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+            color: white;
+            border-color: #F39C12;
+        }
+
+        .gift-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 2px, transparent 2px),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 2px, transparent 2px);
+            background-size: 40px 40px, 60px 60px;
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        .gift-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+            height: 100%;
+            justify-content: space-between;
+            padding: 4px 0;
+            flex: 1;
+        }
+
+        .gift-animation-container {
+            width: 120px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 0;
+        }
+
+        .gift-lottie {
+            width: 90px;
+            height: 90px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .gift-icon-fallback {
+            font-size: 40px;
+            opacity: 0.9;
+        }
+
+        .gift-info {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .gift-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1.2;
+            text-align: center;
+            flex: 1;
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .gift-id {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 0;
+            font-weight: 500;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .gift-value {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 0;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .gift-actions {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            margin-top: 0;
+            flex-shrink: 0;
+        }
+
+        .btn-withdraw {
+            width: 100%;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            max-width: 120px;
+        }
+
+        .btn-withdraw:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-withdraw:active {
+            transform: translateY(0);
+        }
+
+        .btn-withdraw:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-inventory {
             text-align: center;
             padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-subtitle {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Анимации */
+        .gift-item {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .gift-item:nth-child(2) { animation-delay: 0.1s; }
+        .gift-item:nth-child(3) { animation-delay: 0.2s; }
+        .gift-item:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gift-animation-container {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #34C759;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Лоадер */
+        .loader {
+            text-align: center;
+            padding: 40px 20px;
         }
 
         .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid var(--dark-2);
-            border-top-color: var(--primary);
+            border: 3px solid #333;
+            border-top-color: #007AFF;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
@@ -423,498 +501,285 @@
             to { transform: rotate(360deg); }
         }
 
-        .loading p {
-            color: var(--gray);
-        }
-
-        /* Инструкции */
-        .instructions {
-            padding: 20px;
-            margin: 20px;
-            background: var(--dark-1);
-            border-radius: 16px;
-            border: 1px solid var(--dark-2);
-        }
-
-        .instructions h3 {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .instructions h3 i {
-            color: var(--primary);
-        }
-
-        .steps {
-            display: grid;
-            gap: 16px;
-        }
-
-        .step {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .step-number {
-            width: 28px;
-            height: 28px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        .step-content h4 {
-            font-size: 15px;
-            margin-bottom: 4px;
-        }
-
-        .step-content p {
-            font-size: 13px;
-            color: var(--gray);
-            line-height: 1.4;
-        }
-
-        /* Footer */
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--dark-1);
-            border-top: 1px solid var(--dark-2);
-            padding: 12px 20px;
-            z-index: 100;
-        }
-
-        .footer-content {
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .footer p {
-            font-size: 12px;
-            color: var(--gray);
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .footer-links a {
-            color: var(--gray);
-            text-decoration: none;
-            font-size: 12px;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        /* Уведомления */
-        .notification {
+        /* Кнопка обновления */
+        .refresh-btn {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: var(--success);
+            background: #007AFF;
             color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 1000;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            max-width: 300px;
-        }
-
-        .notification.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .notification.error {
-            background: var(--danger);
-        }
-
-        .notification.warning {
-            background: var(--warning);
-        }
-
-        /* Модальное окно */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
         }
 
-        .modal.show {
-            opacity: 1;
-            visibility: visible;
+        .refresh-btn:hover {
+            transform: rotate(45deg);
+            background: #0056CC;
         }
 
-        .modal-content {
-            background: var(--dark-1);
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            overflow: hidden;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--dark-2);
+        /* Статистика */
+        .stats-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: space-around;
+            padding: 15px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
         }
 
-        .modal-header h3 {
-            font-size: 18px;
+        .stat-item {
+            text-align: center;
         }
 
-        .close-btn {
-            background: none;
-            border: none;
-            color: var(--gray);
+        .stat-number {
             font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
+            font-weight: 700;
+            color: #007AFF;
         }
 
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-footer {
-            padding: 20px;
-            border-top: 1px solid var(--dark-2);
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        /* Кнопки */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: var(--dark-2);
-            color: var(--light);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .stats {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
-                padding: 16px;
-            }
-            
-            .stat-card {
-                padding: 12px;
-            }
-            
-            .stat-value {
-                font-size: 20px;
-            }
-            
-            .nft-grid {
-                grid-template-columns: repeat(2, 1fr);
-                padding: 0 16px 100px;
-                gap: 12px;
-            }
-            
-            .nft-image {
-                height: 140px;
-            }
-            
-            .instructions {
-                margin: 16px;
-                padding: 16px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .nft-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stat-card {
-                padding: 10px;
-            }
-            
-            .stat-value {
-                font-size: 18px;
-            }
-            
-            .logo h1 {
-                font-size: 18px;
-            }
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">G</div>
-                    <h1>NFT Инвентарь</h1>
-                </div>
-                <div class="user-info">
-                    <i class="fas fa-user"></i>
-                    <span id="userId">ID: Загрузка...</span>
-                </div>
-            </div>
+    <div class="container">
+        <header style="display:flex;align-items:center;justify-content:center;padding:20px 0;background:#0a0a0a;border-bottom:1px solid #2a2a2a">
+            <svg class="logo" fill="none" height="28" style="color: #fff;" viewbox="0 0 157 28" width="157" xmlns="http://www.w3.org/2000/svg">
+                <!-- Ваш оригинальный логотип Getgems -->
+                <g clip-path="url(#full_logo_svg__clip0_5161_199826)">
+                    <path clip-rule="evenodd" d="M14.0179 0C14.0179 7.74185 7.74185 14.0179 0 14.0179C0 6.276 6.276 0 14.0179 0ZM14.0179 28.0357C6.276 28.0357 0 21.7597 0 14.0179C7.74185 14.0179 14.0179 20.2939 14.0179 28.0357ZM28.0357 14.0179C28.0357 21.7597 21.7597 28.0357 14.0179 28.0357C14.0179 20.2939 20.2939 14.0179 28.0357 14.0179ZM26.8675 1.16818C26.8675 7.61969 21.6375 12.8497 15.186 12.8497C15.186 6.39817 20.416 1.16818 26.8675 1.16818Z" fill="currentColor" fill-rule="evenodd"/>
+                    <path d="M47.3524 27.8252C46.1562 27.8252 44.9507 27.6477 43.7358 27.2925C42.5396 26.9561 41.5678 26.5075 40.8201 25.9468L42.3901 22.7507C42.9882 23.162 43.661 23.4797 44.4087 23.704C45.175 23.947 45.9694 24.0684 46.7917 24.0684C47.7449 24.0684 48.5206 23.9282 49.1187 23.6479C49.7168 23.3675 50.156 22.947 50.4364 22.3863C50.7354 21.8256 50.8849 21.1247 50.8849 20.2836V17.8165L51.726 17.9847C51.6139 18.5641 51.2962 19.1061 50.7728 19.6107C50.2682 20.1154 49.642 20.5173 48.8944 20.8163C48.1468 21.1154 47.3618 21.2649 46.5394 21.2649C45.1937 21.2649 43.9882 20.9565 42.9228 20.3397C41.8574 19.7042 41.0164 18.8351 40.3996 17.7324C39.8015 16.6109 39.5024 15.3213 39.5024 13.8634C39.5024 12.3682 39.8015 11.0412 40.3996 9.88235C41.0164 8.72357 41.8481 7.81711 42.8948 7.16289C43.9414 6.50875 45.1189 6.18164 46.4273 6.18164C46.9693 6.18164 47.4926 6.2471 47.9973 6.37789C48.5206 6.49003 48.9972 6.65825 49.4271 6.88253C49.8757 7.10682 50.2682 7.35914 50.6046 7.6395C50.9597 7.91986 51.2494 8.22825 51.4737 8.56468C51.698 8.90111 51.8382 9.23753 51.8942 9.57396L50.969 9.85432L51.1373 6.49003H55.4267V20.1434C55.4267 21.3584 55.2396 22.4424 54.866 23.3956C54.5107 24.3488 53.978 25.1525 53.268 25.8066C52.5764 26.4609 51.7353 26.9561 50.7448 27.2925C49.7542 27.6477 48.6234 27.8252 47.3524 27.8252ZM47.4646 17.7604C48.1935 17.7604 48.8196 17.6016 49.343 17.2838C49.885 16.9661 50.2962 16.5175 50.5766 15.9381C50.8756 15.3587 51.0251 14.6859 51.0251 13.9195C51.0251 13.1159 50.8756 12.4243 50.5766 11.8449C50.2962 11.2655 49.885 10.8169 49.343 10.4991C48.8196 10.1627 48.1935 9.9945 47.4646 9.9945C46.773 9.9945 46.1656 10.1627 45.6423 10.4991C45.1189 10.8169 44.7078 11.2655 44.4087 11.8449C44.1283 12.4243 43.9882 13.1065 43.9882 13.8915C43.9882 14.6765 44.1283 15.3587 44.4087 15.9381C44.7078 16.5175 45.1189 16.9661 45.6423 17.2838C46.1656 17.6016 46.773 17.7604 47.4646 17.7604Z" fill="currentColor"/>
+                    <path d="M65.8535 21.6574C64.2085 21.6574 62.7696 21.3303 61.536 20.6761C60.3214 20.022 59.3773 19.1248 58.7044 17.9847C58.0505 16.8259 57.7231 15.5082 57.7231 14.0316C57.7231 12.8729 57.9103 11.8168 58.2839 10.8636C58.6574 9.89175 59.181 9.06 59.8539 8.36843C60.5456 7.67692 61.3489 7.14425 62.2649 6.77039C63.1992 6.37789 64.2183 6.18164 65.3208 6.18164C66.3673 6.18164 67.3205 6.36857 68.1805 6.74235C69.0405 7.11621 69.7876 7.6395 70.4233 8.31236C71.059 8.98521 71.5447 9.7796 71.8812 10.6954C72.2176 11.6112 72.3767 12.6112 72.3578 13.6952L72.3297 14.9288H60.4987L59.8258 12.3775H68.6571L68.1805 12.8822V12.3215C68.1433 11.8542 67.9933 11.4524 67.7319 11.1159C67.4887 10.7609 67.1621 10.4805 66.7506 10.2749C66.3581 10.0693 65.9096 9.96646 65.4049 9.96646C64.6571 9.96646 64.0221 10.116 63.4985 10.415C62.9939 10.6954 62.6105 11.1066 62.349 11.6486C62.0876 12.1907 61.9565 12.8635 61.9565 13.6672C61.9565 14.4714 62.1247 15.1811 62.4612 15.7979C62.8165 16.4152 63.3212 16.8913 63.9751 17.2277C64.648 17.5641 65.4421 17.7324 66.3581 17.7324C66.9749 17.7324 67.5356 17.6389 68.0403 17.452C68.5449 17.2651 69.0867 16.9474 69.6664 16.4988L71.769 19.4706C71.1894 19.9566 70.5726 20.3677 69.9187 20.7041C69.2647 21.0219 68.5919 21.2555 67.9001 21.405C67.2272 21.5732 66.5453 21.6574 65.8535 21.6574Z" fill="currentColor"/>
+                    <path d="M75.8879 21.3771V2.7334H80.4016V21.3771H75.8879ZM73.2525 10.4432V6.49018H83.2613V10.4432H73.2525Z" fill="currentColor"/>
+                    <path d="M91.9677 27.8257C90.7712 27.8257 89.5657 27.6482 88.3511 27.293C87.1546 26.9566 86.1825 26.508 85.4354 25.9473L87.0054 22.7512C87.6032 23.1624 88.2761 23.4802 89.0239 23.7045C89.79 23.9475 90.5841 24.0689 91.407 24.0689C92.3602 24.0689 93.1354 23.9287 93.7339 23.6484C94.3318 23.368 94.7713 22.9475 95.0516 22.3868C95.3502 21.8261 95.5002 21.1252 95.5002 20.2841V17.8169L96.3412 17.9852C96.2291 18.5646 95.9109 19.1066 95.388 19.6112C94.8834 20.1159 94.2568 20.5178 93.5096 20.8168C92.7618 21.1158 91.9768 21.2653 91.1546 21.2653C89.8089 21.2653 88.6034 20.957 87.538 20.3402C86.4727 19.7047 85.6316 18.8356 85.0148 17.7328C84.4163 16.6114 84.1177 15.3218 84.1177 13.8639C84.1177 12.3687 84.4163 11.0417 85.0148 9.88284C85.6316 8.72406 86.4629 7.81759 87.51 7.16338C88.5564 6.50924 89.7339 6.18213 91.0425 6.18213C91.5843 6.18213 92.1079 6.24759 92.6125 6.37838C93.1354 6.49052 93.612 6.65874 94.0423 6.88302C94.4909 7.10731 94.8834 7.35963 95.2198 7.63999C95.5745 7.92034 95.8646 8.22874 96.0889 8.56517C96.3132 8.90159 96.4534 9.23802 96.5095 9.57445L95.5843 9.85481L95.7525 6.49052H100.042V20.1439C100.042 21.3588 99.8548 22.4428 99.4812 23.3961C99.1259 24.3493 98.5932 25.153 97.8832 25.8071C97.1914 26.4613 96.3504 26.9566 95.36 27.293C94.3689 27.6482 93.2384 27.8257 91.9677 27.8257ZM92.0798 17.7609C92.8087 17.7609 93.4346 17.6021 93.9582 17.2843C94.5 16.9666 94.9114 16.518 95.1918 15.9386C95.4904 15.3592 95.6404 14.6863 95.6404 13.92C95.6404 13.1163 95.4904 12.4248 95.1918 11.8453C94.9114 11.266 94.5 10.8174 93.9582 10.4996C93.4346 10.1632 92.8087 9.99499 92.0798 9.99499C91.388 9.99499 90.7804 10.1632 90.2575 10.4996C89.7339 10.8174 89.3225 11.266 89.0239 11.8453C88.7436 12.4248 88.6034 13.107 88.6034 13.892C88.6034 14.677 88.7436 15.3592 89.0239 15.9386C89.3225 16.518 89.7339 16.9666 90.2575 17.2843C90.7804 17.6021 91.388 17.7609 92.0798 17.7609Z" fill="currentColor"/>
+                    <path d="M110.469 21.6578C108.824 21.6578 107.385 21.3308 106.152 20.6766C104.936 20.0225 103.993 19.1253 103.32 17.9852C102.665 16.8264 102.339 15.5087 102.339 14.0321C102.339 12.8733 102.525 11.8173 102.9 10.8641C103.273 9.89224 103.797 9.06048 104.47 8.36891C105.161 7.67741 105.965 7.14474 106.881 6.77088C107.815 6.37838 108.833 6.18213 109.937 6.18213C110.983 6.18213 111.936 6.36906 112.796 6.74284C113.655 7.1167 114.403 7.63999 115.039 8.31284C115.674 8.9857 116.16 9.78009 116.497 10.6959C116.833 11.6117 116.992 12.6117 116.974 13.6957L116.945 14.9293H105.114L104.442 12.378H113.273L112.796 12.8827V12.322C112.758 11.8547 112.609 11.4528 112.348 11.1164C112.104 10.7613 111.777 10.481 111.366 10.2753C110.974 10.0698 110.525 9.96695 110.021 9.96695C109.273 9.96695 108.637 10.1165 108.114 10.4155C107.61 10.6959 107.226 11.1071 106.965 11.6491C106.703 12.1912 106.572 12.864 106.572 13.6677C106.572 14.4714 106.74 15.1816 107.077 15.7984C107.432 16.4152 107.936 16.8918 108.591 17.2282C109.264 17.5646 110.058 17.7328 110.974 17.7328C111.591 17.7328 112.151 17.6394 112.656 17.4525C113.161 17.2656 113.702 16.9478 114.282 16.4993L116.385 19.4711C115.805 19.9571 115.188 20.3682 114.534 20.7046C113.88 21.0224 113.207 21.256 112.516 21.4055C111.843 21.5737 111.16 21.6578 110.469 21.6578Z" fill="currentColor"/>
+                    <path d="M119.241 21.3773V6.49032H123.531L123.671 9.18175L123.054 9.23782C123.259 8.75189 123.54 8.32203 123.895 7.94817C124.25 7.57439 124.643 7.266 125.073 7.023C125.521 6.76135 125.989 6.5651 126.474 6.43425C126.96 6.28475 127.447 6.20996 127.932 6.20996C128.68 6.20996 129.343 6.3221 129.923 6.54639C130.521 6.77067 131.035 7.13514 131.465 7.63978C131.913 8.14443 132.269 8.81728 132.53 9.65835L131.857 9.54621L132.054 9.15371C132.315 8.70514 132.633 8.30332 133.007 7.94817C133.399 7.57439 133.829 7.25667 134.296 6.99496C134.764 6.73332 135.24 6.53707 135.726 6.40621C136.231 6.27542 136.717 6.20996 137.184 6.20996C138.362 6.20996 139.343 6.44364 140.128 6.91085C140.913 7.37814 141.502 8.06971 141.894 8.9855C142.287 9.88264 142.483 10.9947 142.483 12.3217V21.3773H137.969V12.6582C137.969 11.7797 137.782 11.1256 137.408 10.6957C137.053 10.2471 136.511 10.0228 135.782 10.0228C135.39 10.0228 135.025 10.0883 134.689 10.2191C134.371 10.3312 134.091 10.5088 133.848 10.7517C133.624 10.976 133.446 11.2377 133.315 11.5367C133.184 11.8358 133.119 12.1722 133.119 12.546V21.3773H128.605V12.6301C128.605 11.7891 128.409 11.1442 128.016 10.6957C127.643 10.2471 127.11 10.0228 126.418 10.0228C126.045 10.0228 125.689 10.0883 125.353 10.2191C125.035 10.3312 124.755 10.5088 124.512 10.7517C124.288 10.976 124.11 11.2377 123.979 11.5367C123.848 11.8358 123.783 12.1722 123.783 12.546V21.3773H119.241Z" fill="currentColor"/>
+                    <path d="M150.696 21.6574C149.275 21.6574 148.004 21.4331 146.883 20.9845C145.761 20.5173 144.864 19.8818 144.191 19.0781L146.939 16.7231C147.518 17.3025 148.172 17.7324 148.901 18.0127C149.63 18.2744 150.321 18.4052 150.976 18.4052C151.219 18.4052 151.434 18.3772 151.621 18.3211C151.807 18.265 151.966 18.1903 152.097 18.0968C152.247 17.9847 152.359 17.8632 152.434 17.7324C152.508 17.5829 152.546 17.4146 152.546 17.2277C152.546 16.8539 152.387 16.5736 152.069 16.3866C151.919 16.2932 151.649 16.1811 151.256 16.0502C150.864 15.9007 150.359 15.7512 149.742 15.6016C148.864 15.3774 148.097 15.1064 147.444 14.7886C146.808 14.4709 146.284 14.1064 145.874 13.6952C145.499 13.3214 145.21 12.8916 145.004 12.4056C144.817 11.9196 144.724 11.3776 144.724 10.7795C144.724 9.86371 144.995 9.06 145.537 8.36843C146.098 7.67692 146.827 7.14425 147.724 6.77039C148.621 6.37789 149.592 6.18164 150.64 6.18164C151.462 6.18164 152.238 6.27514 152.967 6.462C153.714 6.64893 154.406 6.91057 155.041 7.247C155.695 7.58343 156.275 7.98532 156.779 8.45253L154.396 11.1159C154.078 10.7982 153.705 10.5179 153.275 10.2749C152.845 10.0132 152.415 9.80764 151.985 9.65807C151.555 9.48985 151.153 9.40575 150.78 9.40575C150.499 9.40575 150.247 9.43378 150.023 9.48986C149.817 9.52728 149.639 9.602 149.49 9.71414C149.359 9.80764 149.256 9.92911 149.182 10.0786C149.107 10.2095 149.07 10.359 149.07 10.5272C149.07 10.7328 149.116 10.9197 149.21 11.0879C149.322 11.2375 149.471 11.3776 149.658 11.5084C149.827 11.6019 150.116 11.7234 150.527 11.8729C150.957 12.0225 151.518 12.1907 152.21 12.3775C153.088 12.6205 153.836 12.9009 154.452 13.2186C155.087 13.5177 155.592 13.8728 155.966 14.284C156.284 14.6017 156.508 14.9755 156.639 15.4054C156.789 15.8166 156.864 16.2652 156.864 16.7511C156.864 17.7043 156.592 18.5548 156.051 19.3024C155.527 20.0313 154.798 20.6107 153.864 21.0406C152.948 21.4518 151.891 21.6574 150.696 21.6574Z" fill="currentColor"/>
+                </g>
+                <defs>
+                    <clippath id="full_logo_svg__clip0_5161_199826">
+                        <rect fill="white" height="28" width="157"/>
+                    </clippath>
+                </defs>
+            </svg>
         </header>
-
+        
         <!-- Статистика -->
-        <div class="stats">
-            <div class="stat-card">
-                <i class="fas fa-gift"></i>
-                <div class="stat-value" id="totalNFTs">0</div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="totalGifts">0</div>
                 <div class="stat-label">Всего NFT</div>
             </div>
-            <div class="stat-card uncommon">
-                <i class="fas fa-star"></i>
-                <div class="stat-value" id="uniqueNFTs">0</div>
+            <div class="stat-item">
+                <div class="stat-number" id="uniqueGifts">0</div>
                 <div class="stat-label">Уникальные</div>
             </div>
-            <div class="stat-card rare">
-                <i class="fas fa-gem"></i>
-                <div class="stat-value" id="topRarity">-</div>
-                <div class="stat-label">Редкость</div>
+            <div class="stat-item">
+                <div class="stat-number" id="latestGift">-</div>
+                <div class="stat-label">Последний</div>
             </div>
         </div>
 
-        <!-- Фильтры -->
-        <div class="filters">
-            <button class="filter-btn active" data-filter="all">
-                <i class="fas fa-layer-group"></i> Все
-            </button>
-            <button class="filter-btn" data-filter="common">
-                <i class="fas fa-circle" style="color: var(--common);"></i> Обычные
-            </button>
-            <button class="filter-btn" data-filter="uncommon">
-                <i class="fas fa-circle" style="color: var(--uncommon);"></i> Необычные
-            </button>
-            <button class="filter-btn" data-filter="rare">
-                <i class="fas fa-circle" style="color: var(--rare);"></i> Редкие
-            </button>
-            <button class="filter-btn" data-filter="epic">
-                <i class="fas fa-circle" style="color: var(--epic);"></i> Эпические
-            </button>
-            <button class="filter-btn" data-filter="legendary">
-                <i class="fas fa-circle" style="color: var(--legendary);"></i> Легендарные
-            </button>
-        </div>
+        <!-- Кнопка обновления -->
+        <button class="refresh-btn" onclick="refreshGifts()">
+            <i class="fas fa-sync-alt"></i>
+        </button>
 
-        <!-- Сетка NFT -->
-        <div id="nftGrid" class="nft-grid">
-            <!-- NFT карточки будут добавляться здесь -->
-            <div class="loading">
+        <div class="main-content">
+            <!-- Загрузка -->
+            <div class="loader" id="loader">
                 <div class="spinner"></div>
-                <p>Загрузка NFT...</p>
+                <p>Загрузка NFT подарков...</p>
             </div>
-        </div>
 
-        <!-- Инструкции -->
-        <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> Как получить NFT подарки?</h3>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h4>Создайте подарочную ссылку</h4>
-                        <p>В любом чате введите @GetgemsBot и ссылку на NFT (например: t.me/nft/collection-123)</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h4>Примите подарок в боте</h4>
-                        <p>Перейдите по ссылке в боте и нажмите "Принять подарок"</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h4>NFT появится в инвентаре</h4>
-                        <p>Принятые NFT автоматически появятся здесь. Обновите страницу если нужно</p>
-                    </div>
-                </div>
+            <!-- Сетка подарков -->
+            <div class="gifts-grid" id="giftsGrid" style="display: none;">
+                <!-- NFT карточки будут добавляться здесь -->
             </div>
-        </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-content">
-                <p>© 2024 Getgems NFT Platform</p>
-                <div class="footer-links">
-                    <a href="https://getgems.io" target="_blank">Getgems</a>
-                    <a href="#" onclick="refreshPage()">Обновить</a>
-                    <a href="#" onclick="showHelp()">Помощь</a>
+            <!-- Пустой инвентарь -->
+            <div class="empty-inventory" id="emptyInventory" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-gift"></i>
                 </div>
-            </div>
-        </footer>
-
-        <!-- Уведомление -->
-        <div id="notification" class="notification">
-            <i class="fas fa-check-circle"></i>
-            <span id="notificationText"></span>
-        </div>
-
-        <!-- Модальное окно помощи -->
-        <div id="helpModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-question-circle"></i> Помощь</h3>
-                    <button class="close-btn" onclick="closeHelp()">&times;</button>
+                <div class="empty-title">Пока нет NFT подарков</div>
+                <div class="empty-subtitle">
+                    Примите NFT подарок через бота Getgems, и он появится здесь
                 </div>
-                <div class="modal-body">
-                    <p><strong>Часто задаваемые вопросы:</strong></p>
-                    <br>
-                    <p><strong>Q: Где мои NFT?</strong><br>
-                    A: NFT появляются после принятия подарка в боте. Обновите страницу через 1-2 минуты.</p>
-                    <br>
-                    <p><strong>Q: Как создать подарочную ссылку?</strong><br>
-                    A: В любом чате введите @GetgemsBot и ссылку на NFT из Getgems.</p>
-                    <br>
-                    <p><strong>Q: Можно ли вывести NFT?</strong><br>
-                    A: Да, нажмите кнопку "Вывести" на карточке NFT для получения на ваш кошелек.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="closeHelp()">Закрыть</button>
-                    <button class="btn btn-primary" onclick="openBot()">
-                        <i class="fab fa-telegram"></i> Открыть бота
-                    </button>
-                </div>
+                <button class="btn" onclick="openGetgems()" style="margin-top: 20px;">
+                    <i class="fab fa-telegram"></i> Открыть Getgems
+                </button>
             </div>
         </div>
     </div>
+    
+    <!-- Навигация -->
+    <div class="bottom-navigation">
+        <a href="#" class="nav-item" onclick="redirectToGetgems('market')">
+            <div class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 7V17C3 18.1046 3.89543 19 5 19H9L12 16H19C20.1046 16 21 15.1046 21 14V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 13H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>Маркет</div>
+        </a>
+        <a href="#" class="nav-item active">
+            <div class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div>Заявки</div>
+        </a>
+        <a href="#" class="nav-item" onclick="redirectToGetgems('catalog')">
+            <div class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
+                    <path d="M7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div>Каталог</div>
+        </a>
+        <a href="#" class="nav-item" onclick="redirectToGetgems('cart')">
+            <div class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 18C5.9 18 5.01 18.9 5.01 20S5.9 22 7 22 9 21.1 9 20 8.1 18 7 18ZM1 2V4H3L6.6 11.59L5.25 14.04C5.09 14.32 5 14.65 5 15C5 16.1 5.9 17 7 17H19V15H7.42C7.28 15 7.17 14.89 7.17 14.75L7.2 14.63L8.1 13H15.55C16.3 13 16.96 12.59 17.3 11.97L20.88 5H5.21L4.27 3H1ZM17 18C15.9 18 15.01 18.9 15.01 20S15.9 22 17 22 19 21.1 19 20 18.1 18 17 18Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div>Корзина</div>
+        </a>
+        <a href="#" class="nav-item" onclick="redirectToGetgems('profile')">
+            <div class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div>Профиль</div>
+        </a>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText"></span>
+    </div>
 
     <script>
-        // Глобальные переменные
-        let allNFTs = [];
-        let currentFilter = 'all';
-        let userId = null;
-
-        // Инициализация при загрузке страницы
+        // Инициализация Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+            
+            // Принудительно устанавливаем темную тему
+            window.Telegram.WebApp.setHeaderColor('#0a0a0a');
+            window.Telegram.WebApp.setBackgroundColor('#0a0a0a');
+            
+            // Переопределяем цветовую схему
+            if (window.Telegram.WebApp.colorScheme !== 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+        
+        // Принудительно применяем темную тему при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Запуск NFT инвентаря...');
+            document.body.style.backgroundColor = '#0a0a0a';
+            document.body.style.color = '#ffffff';
+            document.documentElement.style.backgroundColor = '#0a0a0a';
+            document.documentElement.style.colorScheme = 'dark';
             
-            // Инициализация Telegram WebApp
-            initTelegramWebApp();
-            
-            // Загрузка NFT
-            loadNFTs();
-            
-            // Настройка фильтров
-            setupFilters();
-            
-            // Настройка обновления
-            setupAutoRefresh();
+            // Запускаем приложение
+            initApp();
         });
 
-        // Инициализация Telegram WebApp
-        function initTelegramWebApp() {
+        // Глобальные переменные
+        let userId = null;
+        let allGifts = [];
+
+        // Функция инициализации приложения
+        async function initApp() {
+            console.log('🚀 Инициализация NFT инвентаря...');
+            
+            // Получаем user_id
+            userId = getUserId();
+            console.log('👤 User ID:', userId);
+            
+            if (!userId) {
+                showError('❌ Не удалось определить пользователя');
+                return;
+            }
+            
+            // Загружаем NFT подарки
+            await loadGifts();
+            
+            // Автообновление каждые 30 секунд
+            setInterval(async () => {
+                console.log('🔄 Автообновление NFT...');
+                await loadGifts();
+            }, 30000);
+        }
+
+        // Получение user_id из URL или Telegram
+        function getUserId() {
+            console.log('🔍 Получение user_id...');
+            
+            // 1. Из параметров URL (самый надежный способ!)
+            const urlParams = new URLSearchParams(window.location.search);
+            const userIdFromUrl = urlParams.get('user_id') || urlParams.get('user') || urlParams.get('telegram_id');
+            
+            if (userIdFromUrl) {
+                console.log('✅ Найден user_id из URL:', userIdFromUrl);
+                return userIdFromUrl;
+            }
+            
+            // 2. Из Telegram WebApp
             if (window.Telegram && window.Telegram.WebApp) {
                 console.log('📱 Telegram WebApp обнаружен');
                 
-                // Расширяем на весь экран
-                Telegram.WebApp.expand();
-                
-                // Устанавливаем тему
-                Telegram.WebApp.setHeaderColor('#000000');
-                Telegram.WebApp.setBackgroundColor('#000000');
-                
-                // Получаем данные пользователя
-                const user = Telegram.WebApp.initDataUnsafe?.user;
-                if (user) {
-                    userId = user.id;
-                    document.getElementById('userId').textContent = `ID: ${userId}`;
-                    console.log('👤 Пользователь:', user);
+                // Проверяем initDataUnsafe
+                if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                    const userId = window.Telegram.WebApp.initDataUnsafe.user.id;
+                    console.log('✅ Найден user_id из initDataUnsafe:', userId);
+                    return userId;
                 }
-            } else {
-                console.log('⚠️ Telegram WebApp не обнаружен, используем тестовый режим');
-                // Тестовый ID для разработки
-                userId = getTestUserId();
-                document.getElementById('userId').textContent = `ID: ${userId} (тест)`;
+                
+                // Пытаемся парсить initData строку
+                const initDataString = window.Telegram.WebApp.initData;
+                if (initDataString) {
+                    try {
+                        const params = new URLSearchParams(initDataString);
+                        const userStr = params.get('user');
+                        if (userStr) {
+                            const user = JSON.parse(decodeURIComponent(userStr));
+                            console.log('✅ Найден user_id из initData:', user.id);
+                            return user.id;
+                        }
+                    } catch (e) {
+                        console.error('❌ Ошибка парсинга initData:', e);
+                    }
+                }
             }
+            
+            console.log('❌ user_id не найден');
+            return null;
         }
 
-        // Получение тестового ID из URL
-        function getTestUserId() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('user_id') || '123456789';
-        }
-
-        // Загрузка NFT
-        async function loadNFTs() {
+        // Загрузка NFT подарков
+        async function loadGifts() {
             try {
-                showLoading(true);
+                showLoader(true);
                 
                 if (!userId) {
                     throw new Error('User ID not found');
@@ -922,41 +787,64 @@
                 
                 console.log(`📡 Загрузка NFT для пользователя ${userId}...`);
                 
-                // URL API (замените на ваш)
+                // URL вашего API (замените на ваш адрес)
                 const apiUrl = `http://localhost:5000/api/gifts?user_id=${userId}`;
+                console.log('API URL:', apiUrl);
                 
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                console.log('📦 Ответ API:', data);
                 
-                if (data.success && data.gifts && data.gifts.length > 0) {
-                    console.log(`✅ Загружено ${data.gifts.length} NFT`);
-                    allNFTs = data.gifts;
+                if (data.success && data.gifts && Array.isArray(data.gifts)) {
+                    allGifts = data.gifts;
+                    console.log(`✅ Загружено ${allGifts.length} NFT подарков`);
+                    
+                    // Обновляем статистику
                     updateStatistics();
-                    displayNFTs();
+                    
+                    // Отображаем NFT
+                    displayGifts();
+                    
+                    // Показываем уведомление если есть новые NFT
+                    if (allGifts.length > 0) {
+                        showNotification(`Загружено ${allGifts.length} NFT подарков`);
+                    }
                 } else {
+                    console.log('📭 Нет NFT подарков или ошибка в данных');
+                    allGifts = [];
                     showEmptyState();
                 }
                 
             } catch (error) {
                 console.error('❌ Ошибка загрузки NFT:', error);
-                showNotification('Ошибка загрузки NFT. Проверьте подключение.', 'error');
-                showTestData(); // Показать тестовые данные для демонстрации
+                showError('Ошибка загрузки NFT. Проверьте подключение.');
+                
+                // Для демонстрации показываем тестовые данные
+                showTestData();
+                
             } finally {
-                showLoading(false);
+                showLoader(false);
             }
         }
 
-        // Показать тестовые данные для демонстрации
+        // Тестовые данные для демонстрации
         function showTestData() {
-            allNFTs = [
+            console.log('👨‍💻 Показываю тестовые данные...');
+            
+            allGifts = [
                 {
                     id: 1,
-                    name: 'Cool Cat',
+                    name: 'Cool Cat NFT',
                     number: '#1234',
                     link: 'https://t.me/nft/coolcat-1234',
                     rarity: 'rare'
@@ -974,198 +862,131 @@
                     number: '#9012',
                     link: 'https://t.me/nft/moonape-9012',
                     rarity: 'legendary'
-                },
-                {
-                    id: 4,
-                    name: 'Cyber Punk',
-                    number: '#3456',
-                    link: 'https://t.me/nft/cyberpunk-3456',
-                    rarity: 'epic'
-                },
-                {
-                    id: 5,
-                    name: 'Neon Fish',
-                    number: '#7890',
-                    link: 'https://t.me/nft/neonfish-7890',
-                    rarity: 'uncommon'
                 }
             ];
             
             updateStatistics();
-            displayNFTs();
+            displayGifts();
+            showNotification('Загружены тестовые данные (3 NFT)');
         }
 
         // Обновление статистики
         function updateStatistics() {
-            const total = allNFTs.length;
-            const unique = new Set(allNFTs.map(nft => nft.name)).size;
+            const total = allGifts.length;
+            const unique = new Set(allGifts.map(gift => gift.name)).size;
             
-            // Определяем самую высокую редкость
-            const rarityOrder = {
-                'common': 1,
-                'uncommon': 2,
-                'rare': 3,
-                'epic': 4,
-                'legendary': 5
-            };
+            // Последний NFT
+            const latestGift = allGifts.length > 0 ? allGifts[0].name : '-';
             
-            let topRarity = 'common';
-            allNFTs.forEach(nft => {
-                if (rarityOrder[nft.rarity] > rarityOrder[topRarity]) {
-                    topRarity = nft.rarity;
-                }
-            });
-            
-            document.getElementById('totalNFTs').textContent = total;
-            document.getElementById('uniqueNFTs').textContent = unique;
-            document.getElementById('topRarity').textContent = getRarityLabel(topRarity);
-        }
-
-        // Получить название редкости
-        function getRarityLabel(rarity) {
-            const labels = {
-                'common': 'Обычный',
-                'uncommon': 'Необычный',
-                'rare': 'Редкий',
-                'epic': 'Эпический',
-                'legendary': 'Легендарный'
-            };
-            return labels[rarity] || rarity;
+            document.getElementById('totalGifts').textContent = total;
+            document.getElementById('uniqueGifts').textContent = unique;
+            document.getElementById('latestGift').textContent = latestGift.substring(0, 8) + '...';
         }
 
         // Отображение NFT
-        function displayNFTs() {
-            const nftGrid = document.getElementById('nftGrid');
-            nftGrid.innerHTML = '';
+        function displayGifts() {
+            const giftsGrid = document.getElementById('giftsGrid');
             
-            let filteredNFTs = allNFTs;
-            if (currentFilter !== 'all') {
-                filteredNFTs = allNFTs.filter(nft => nft.rarity === currentFilter);
-            }
-            
-            if (filteredNFTs.length === 0) {
+            if (allGifts.length === 0) {
                 showEmptyState();
                 return;
             }
             
-            filteredNFTs.forEach(nft => {
-                const nftCard = createNFTCard(nft);
-                nftGrid.appendChild(nftCard);
+            // Очищаем сетку
+            giftsGrid.innerHTML = '';
+            
+            // Добавляем каждый NFT
+            allGifts.forEach((gift, index) => {
+                const giftCard = createGiftCard(gift, index);
+                giftsGrid.appendChild(giftCard);
             });
+            
+            // Показываем сетку
+            giftsGrid.style.display = 'grid';
+            document.getElementById('emptyInventory').style.display = 'none';
         }
 
         // Создание карточки NFT
-        function createNFTCard(nft) {
+        function createGiftCard(gift, index) {
             const card = document.createElement('div');
-            card.className = `nft-card ${nft.rarity}`;
+            card.className = `gift-item ${gift.rarity || 'common'}`;
+            card.style.animationDelay = `${index * 0.1}s`;
             
             // Определяем иконку по редкости
-            const rarityIcons = {
-                'common': 'fas fa-circle',
-                'uncommon': 'fas fa-star',
-                'rare': 'fas fa-gem',
-                'epic': 'fas fa-crown',
-                'legendary': 'fas fa-fire'
-            };
+            const rarityIcon = getRarityIcon(gift.rarity);
             
-            // Цвет градиента по редкости
-            const gradientColors = {
-                'common': 'linear-gradient(135deg, #8E8E93, #636366)',
-                'uncommon': 'linear-gradient(135deg, #32D74B, #30D158)',
-                'rare': 'linear-gradient(135deg, #0A84FF, #007AFF)',
-                'epic': 'linear-gradient(135deg, #BF5AF2, #AF52DE)',
-                'legendary': 'linear-gradient(135deg, #FFD60A, #FF9500)'
-            };
-            
+            // Формируем содержимое карточки
             card.innerHTML = `
-                <div class="nft-image" style="background: ${gradientColors[nft.rarity] || gradientColors.common}">
-                    <div class="placeholder">
-                        <i class="${rarityIcons[nft.rarity] || 'fas fa-gift'}"></i>
+                <div class="gift-pattern"></div>
+                <div class="gift-content">
+                    <div class="gift-animation-container">
+                        <div class="gift-lottie">
+                            <div class="gift-icon-fallback">
+                                ${rarityIcon}
+                            </div>
+                        </div>
                     </div>
-                    <div class="nft-badge">${getRarityLabel(nft.rarity)}</div>
-                </div>
-                <div class="nft-info">
-                    <div class="nft-name">${nft.name}</div>
-                    <div class="nft-id">${nft.number}</div>
-                    <div class="nft-rarity">${nft.rarity}</div>
-                </div>
-                <div class="nft-actions">
-                    <button class="action-btn view-btn" onclick="viewNFT('${nft.link}')">
-                        <i class="fas fa-eye"></i> Посмотреть
-                    </button>
-                    <button class="action-btn withdraw-btn" onclick="withdrawNFT(${nft.id})">
-                        <i class="fas fa-external-link-alt"></i> Вывести
-                    </button>
+                    <div class="gift-info">
+                        <div class="gift-name" title="${gift.name}">${gift.name}</div>
+                        <div class="gift-id">${gift.number || `#${gift.id}`}</div>
+                        <div class="gift-value">${getRarityName(gift.rarity)}</div>
+                    </div>
+                    <div class="gift-actions">
+                        <button class="btn-withdraw" onclick="withdrawGift(${gift.id})">
+                            <i class="fas fa-external-link-alt"></i> Вывести
+                        </button>
+                    </div>
                 </div>
             `;
             
             return card;
         }
 
-        // Показать пустое состояние
-        function showEmptyState() {
-            const nftGrid = document.getElementById('nftGrid');
-            nftGrid.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-gift"></i>
-                    <h3>Пока нет NFT подарков</h3>
-                    <p>Получите NFT подарки через бота Getgems, и они появятся здесь автоматически</p>
-                    <button class="empty-btn" onclick="openBot()">
-                        <i class="fab fa-telegram"></i> Открыть Getgems бота
-                    </button>
-                </div>
-            `;
-        }
-
-        // Показать/скрыть загрузку
-        function showLoading(show) {
-            const nftGrid = document.getElementById('nftGrid');
-            if (show) {
-                nftGrid.innerHTML = `
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Загрузка NFT...</p>
-                    </div>
-                `;
+        // Получение иконки редкости
+        function getRarityIcon(rarity) {
+            switch (rarity) {
+                case 'common': return '<i class="fas fa-circle"></i>';
+                case 'uncommon': return '<i class="fas fa-star"></i>';
+                case 'rare': return '<i class="fas fa-gem"></i>';
+                case 'epic': return '<i class="fas fa-crown"></i>';
+                case 'legendary': return '<i class="fas fa-fire"></i>';
+                default: return '<i class="fas fa-gift"></i>';
             }
         }
 
-        // Настройка фильтров
-        function setupFilters() {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Убираем активный класс у всех кнопок
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Добавляем активный класс текущей кнопке
-                    this.classList.add('active');
-                    
-                    // Устанавливаем текущий фильтр
-                    currentFilter = this.dataset.filter;
-                    
-                    // Обновляем отображение NFT
-                    displayNFTs();
-                });
-            });
+        // Получение названия редкости
+        function getRarityName(rarity) {
+            switch (rarity) {
+                case 'common': return 'Обычный';
+                case 'uncommon': return 'Необычный';
+                case 'rare': return 'Редкий';
+                case 'epic': return 'Эпический';
+                case 'legendary': return 'Легендарный';
+                default: return 'NFT';
+            }
         }
 
-        // Настройка автообновления
-        function setupAutoRefresh() {
-            // Обновляем каждые 30 секунд
-            setInterval(() => {
-                console.log('🔄 Автообновление...');
-                loadNFTs();
-            }, 30000);
+        // Показать пустое состояние
+        function showEmptyState() {
+            document.getElementById('giftsGrid').style.display = 'none';
+            document.getElementById('emptyInventory').style.display = 'block';
+            document.getElementById('loader').style.display = 'none';
         }
 
-        // Просмотр NFT
-        function viewNFT(link) {
-            window.open(link, '_blank');
+        // Показать/скрыть лоадер
+        function showLoader(show) {
+            const loader = document.getElementById('loader');
+            if (show) {
+                loader.style.display = 'block';
+                document.getElementById('giftsGrid').style.display = 'none';
+                document.getElementById('emptyInventory').style.display = 'none';
+            } else {
+                loader.style.display = 'none';
+            }
         }
 
         // Вывод NFT
-        async function withdrawNFT(nftId) {
+        async function withdrawGift(giftId) {
             if (!confirm('Вы уверены, что хотите вывести этот NFT?')) {
                 return;
             }
@@ -1173,14 +994,13 @@
             try {
                 showNotification('Вывод NFT...', 'warning');
                 
-                // Отправляем запрос на вывод
                 const response = await fetch('http://localhost:5000/api/withdraw', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        gift_id: nftId,
+                        gift_id: giftId,
                         user_id: userId
                     })
                 });
@@ -1190,7 +1010,7 @@
                 if (data.success) {
                     showNotification('✅ NFT успешно выведен!', 'success');
                     // Обновляем список NFT
-                    setTimeout(() => loadNFTs(), 1000);
+                    setTimeout(() => loadGifts(), 1000);
                 } else {
                     throw new Error(data.error || 'Ошибка вывода');
                 }
@@ -1201,25 +1021,10 @@
             }
         }
 
-        // Открыть бота
-        function openBot() {
-            window.open('https://t.me/GetgemsBot', '_blank');
-        }
-
-        // Обновить страницу
-        function refreshPage() {
-            showNotification('Обновление...', 'warning');
-            loadNFTs();
-        }
-
-        // Показать помощь
-        function showHelp() {
-            document.getElementById('helpModal').classList.add('show');
-        }
-
-        // Закрыть помощь
-        function closeHelp() {
-            document.getElementById('helpModal').classList.remove('show');
+        // Обновить NFT
+        function refreshGifts() {
+            showNotification('Обновление NFT...', 'warning');
+            loadGifts();
         }
 
         // Показать уведомление
@@ -1231,12 +1036,13 @@
             notification.className = 'notification';
             
             if (type === 'error') {
-                notification.classList.add('error');
+                notification.style.background = '#FF3B30';
                 notification.querySelector('i').className = 'fas fa-exclamation-circle';
             } else if (type === 'warning') {
-                notification.classList.add('warning');
+                notification.style.background = '#FF9500';
                 notification.querySelector('i').className = 'fas fa-exclamation-triangle';
             } else {
+                notification.style.background = '#34C759';
                 notification.querySelector('i').className = 'fas fa-check-circle';
             }
             
@@ -1248,24 +1054,35 @@
             }, 3000);
         }
 
-        // Дебаг функция
-        function debug() {
-            console.log('=== ДЕБАГ ИНФОРМАЦИЯ ===');
-            console.log('User ID:', userId);
-            console.log('All NFTs:', allNFTs);
-            console.log('Current Filter:', currentFilter);
-            console.log('URL:', window.location.href);
-            console.log('Telegram WebApp:', window.Telegram?.WebApp);
+        // Показать ошибку
+        function showError(message) {
+            showNotification(message, 'error');
         }
 
-        // Глобальные функции для кнопок
-        window.viewNFT = viewNFT;
-        window.withdrawNFT = withdrawNFT;
-        window.openBot = openBot;
-        window.refreshPage = refreshPage;
-        window.showHelp = showHelp;
-        window.closeHelp = closeHelp;
-        window.debug = debug;
+        // Открыть Getgems
+        function openGetgems() {
+            window.open('https://getgems.io', '_blank');
+        }
+
+        // Перенаправление на Getgems
+        function redirectToGetgems(page) {
+            const urls = {
+                'market': 'https://getgems.io/market',
+                'favorites': 'https://getgems.io/favorites', 
+                'catalog': 'https://getgems.io/catalog',
+                'cart': 'https://getgems.io/cart',
+                'profile': 'https://getgems.io/profile'
+            };
+            
+            const url = urls[page] || 'https://getgems.io';
+            window.open(url, '_blank');
+        }
+
+        // Глобальные функции
+        window.withdrawGift = withdrawGift;
+        window.refreshGifts = refreshGifts;
+        window.openGetgems = openGetgems;
+        window.redirectToGetgems = redirectToGetgems;
     </script>
 </body>
 </html>
